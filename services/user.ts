@@ -2,13 +2,13 @@ import { User } from "../model";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
-async function register(userObject: any) {
+async function register(name: string, email: string, password: string) {
     try {
         return {
             response : await User.create({
-                name: userObject.name,
-                email: userObject.email,
-                password: bcrypt.hashSync(userObject.password, 12)
+                name: name,
+                email: email,
+                password: bcrypt.hashSync(password, 12)
         }), status:201
     }
     } catch (error) {
@@ -18,19 +18,19 @@ async function register(userObject: any) {
         }
     }
 }
-async function login(userLoginObject: any) {
+async function login(email: string, password: string) {
     try {
         const userData = await User.findOne({where:{
             email: 
-            userLoginObject.email
+            email
         }});
-        if(!bcrypt.compareSync(userLoginObject.password, userData.password)){
+        if(!bcrypt.compareSync(password, JSON.parse(userData))){
             return {
                 response: 'wrong username or password',
                 status:401            
             }
         }
-    const token = jwt.sign({ id: userData.id }, process.env.JWT_SECRET as string)
+    const token = jwt.sign({ userData }, process.env.JWT_SECRET as string)
     return {
         response: token,
         cookie: token,
